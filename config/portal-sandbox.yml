@@ -1,0 +1,30 @@
+# Sandbox configuration used by docker-compose-sandbox.yml.
+# The "payment portal" is the paysite container at 203.0.113.10.
+# Serve the local page in www/. To test redirect mode instead, add:
+#   redirect:
+#     url: http://203.0.113.10/
+# (redirect always overrides the static page when present)
+static_page:
+  enable: true
+
+portal:
+  listen_ip: 10.255.0.1
+  fqdn: portal.company.example
+
+whitelist:
+  networks:
+    - 203.0.113.10/32
+    - 8.8.8.8/32
+  # Add a real domain here (e.g. one.one.one.one) to demo dynamic nftset
+  # whitelisting when the sandbox host has internet access.
+  domains: []
+
+dns:
+  upstreams:
+    - 1.1.1.1
+
+# In the sandbox gateway container: eth0 = wan network, eth1 = subscribers
+# network (ordering pinned via network priority in docker-compose-sandbox.yml).
+interfaces:
+  subscriber: eth1
+  wan: eth0

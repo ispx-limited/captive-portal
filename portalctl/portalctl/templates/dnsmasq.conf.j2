@@ -1,0 +1,21 @@
+# Rendered by portalctl - do not edit by hand.
+
+port=53
+listen-address={{ config.portal.listen_ip }}
+bind-interfaces
+no-resolv
+no-hosts
+cache-size=10000
+
+{% for upstream in config.dns.upstreams %}
+server={{ upstream }}
+{% endfor %}
+
+# Portal FQDN resolves to the portal itself inside the walled garden.
+address=/{{ config.portal.fqdn }}/{{ config.portal.listen_ip }}
+
+{% for domain in config.whitelist.domains %}
+# Whitelisted domain: resolved addresses are pushed into the nftables sets.
+nftset=/{{ domain }}/4#inet#captive#whitelist_v4
+nftset=/{{ domain }}/6#inet#captive#whitelist_v6
+{% endfor %}

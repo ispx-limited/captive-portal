@@ -1,0 +1,53 @@
+#!/usr/sbin/nft -f
+# Rendered by portalctl - do not edit by hand.
+
+# Idempotent re-apply: declare then delete so the delete never fails.
+table inet captive
+delete table inet captive
+
+table inet captive {
+    set whitelist_v4 {
+        type ipv4_addr
+        flags interval
+        auto-merge
+        elements = { 203.0.113.0/24 }
+    }
+
+    set whitelist_v6 {
+        type ipv6_addr
+        flags interval
+        auto-merge
+        elements = { 2001:db8:beef::/48 }
+    }
+
+    chain prerouting {
+        type nat hook prerouting priority dstnat; policy accept;
+        iifname "eth1" ip daddr 10.255.0.1 return
+        iifname "eth1" ip daddr @whitelist_v4 return
+        iifname "eth1" tcp dport 80 dnat ip to 10.255.0.1:80
+    }
+
+    # Walled garden: only whitelisted destinations may be forwarded.
+    # Everything else from subscribers (including all HTTPS) is dropped,
+    # pfSense-style; OS captive portal detection over HTTP pops the portal.
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+        iifname "eth1" goto subscriber_forward
+    }
+
+    chain subscriber_forward {
+        ct state established,related accept
+        ip daddr @whitelist_v4 accept
+        ip6 daddr @whitelist_v6 accept
+        # Fast-fail DNS-over-TLS so strict private-DNS clients fall back to
+        # plaintext DNS quickly instead of hanging.
+        tcp dport 853 reject with tcp reset
+        counter drop
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        oifname "eth0" ip daddr @whitelist_v4 masquerade
+        oifname "eth0" ip6 daddr @whitelist_v6 masquerade
+    }
+}

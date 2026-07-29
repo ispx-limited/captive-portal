@@ -1,0 +1,131 @@
+# Self-contained sandbox: the portal stack runs inside the gateway container's
+# network namespace (no host networking, no host nftables changes). A fake
+# payment portal (paysite) sits on the WAN side and a subscriber container is
+# routed through the gateway, exactly like a quarantined BNG session.
+#
+#   subscriber (10.255.0.50) --default route--> gateway (10.255.0.1)
+#       [subscribers network, internal]              |  nftables/nginx/dnsmasq
+#                                                    v  in this netns
+#                                paysite (203.0.113.10) [wan network]
+#
+# Usage:
+#   docker compose -f docker-compose-sandbox.yml up -d --build
+#   ./scripts/sandbox-test.sh
+name: captive-portal-sandbox
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+services:
+  gateway:
+    logging: *logging
+    image: alpine:3.20
+    command: ["tail", "-f", "/dev/null"]
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    networks:
+      # priority pins interface order: wan -> eth0, subscribers -> eth1
+      # (matches interfaces.wan/subscriber in config/portal-sandbox.yml).
+      wan:
+        ipv4_address: 203.0.113.2
+        priority: 100
+      subscribers:
+        ipv4_address: 10.255.0.1
+        priority: 50
+    restart: unless-stopped
+
+  portalctl:
+    logging: *logging
+    build: ./portalctl
+    network_mode: service:gateway
+    pid: service:gateway
+    cap_add:
+      - NET_ADMIN
+    command: ["watch", "--config", "/etc/portal/portal-sandbox.yml"]
+    volumes:
+      # Mount the directory, not the file: editors/sed replace the inode and a
+      # single-file bind mount would never see changes (breaks hot reload).
+      - ./config:/etc/portal:ro
+      - ./www:/usr/share/portal/www:ro
+      - portal-run:/run/portal
+    depends_on:
+      - gateway
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "test", "-f", "/run/portal/.ready"]
+      interval: 5s
+      timeout: 2s
+      retries: 30
+
+  nginx:
+    logging: *logging
+    image: nginx:1.27
+    network_mode: service:gateway
+    pid: service:gateway
+    command: ["nginx", "-g", "daemon off;", "-c", "/run/portal/nginx/nginx.conf"]
+    volumes:
+      - portal-run:/run/portal
+    depends_on:
+      portalctl:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dnsmasq:
+    logging: *logging
+    build: ./dnsmasq
+    network_mode: service:gateway
+    pid: service:gateway
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - portal-run:/run/portal
+    depends_on:
+      portalctl:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Simulates the company's payment portal on the WAN side.
+  paysite:
+    logging: *logging
+    image: nginx:1.27
+    networks:
+      wan:
+        ipv4_address: 203.0.113.10
+    restart: unless-stopped
+
+  # Simulated quarantined subscriber. Exec into it to test:
+  #   docker compose -f docker-compose-sandbox.yml exec subscriber bash
+  subscriber:
+    logging: *logging
+    image: nicolaka/netshoot:latest
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 10.255.0.1
+    networks:
+      subscribers:
+        ipv4_address: 10.255.0.50
+    command: ["sh", "-c", "ip route replace default via 10.255.0.1 && exec sleep infinity"]
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+networks:
+  wan:
+    ipam:
+      config:
+        - subnet: 203.0.113.0/24
+          gateway: 203.0.113.254
+  subscribers:
+    # internal: the only way out is through the gateway container.
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.255.0.0/24
+          gateway: 10.255.0.254
+
+volumes:
+  portal-run:

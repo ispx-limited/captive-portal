@@ -1,0 +1,61 @@
+# Cap container logs so nginx access logs can't fill the disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+services:
+  portalctl:
+    build: ./portalctl
+    logging: *logging
+    network_mode: host
+    # Host PID namespace so portalctl can HUP nginx and restart dnsmasq.
+    pid: host
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      # Mount the directory, not the file: editors/sed replace the inode and a
+      # single-file bind mount would never see changes (breaks hot reload).
+      - ./config:/etc/portal:ro
+      - ./www:/usr/share/portal/www:ro
+      - portal-run:/run/portal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "test", "-f", "/run/portal/.ready"]
+      interval: 5s
+      timeout: 2s
+      retries: 30
+
+  nginx:
+    image: nginx:1.27
+    logging: *logging
+    network_mode: host
+    command: ["nginx", "-g", "daemon off;", "-c", "/run/portal/nginx/nginx.conf"]
+    volumes:
+      - portal-run:/run/portal
+      # Uncomment when portal.tls is configured in portal.yml:
+      # - /etc/portal/tls:/etc/portal/tls:ro
+    depends_on:
+      portalctl:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dnsmasq:
+    build: ./dnsmasq
+    logging: *logging
+    network_mode: host
+    # NET_ADMIN lets dnsmasq push resolved whitelist-domain IPs into the
+    # nftables sets (nftset=). portalctl restarts dnsmasq on config change by
+    # sending SIGTERM; the restart policy brings it back with the new config.
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - portal-run:/run/portal
+    depends_on:
+      portalctl:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  portal-run:

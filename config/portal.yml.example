@@ -1,0 +1,42 @@
+# Captive portal configuration (single tenant).
+
+# What the portal does with intercepted HTTP:
+#   static_page.enable: true -> serve your own HTML from www/ (no redirect
+#   needed); the optional redirect block below always overrides it.
+# Any payment links inside your HTML must point at whitelisted destinations.
+static_page:
+  enable: false
+
+# Optional override: 302 every request to this URL instead of serving the
+# static page. Required if static_page.enable is false.
+redirect:
+  url: https://pay.company.example/portal
+
+portal:
+  # IP of this box inside the quarantine VRF (the BNG's default route target).
+  listen_ip: 10.255.0.1
+  fqdn: portal.company.example
+  # Optional: serve the portal page itself over HTTPS with a real certificate
+  # for portal.fqdn (pfSense-style). Subscriber HTTPS to other destinations is
+  # always dropped.
+  # tls:
+  #   cert: /etc/portal/tls/fullchain.pem
+  #   key: /etc/portal/tls/privkey.pem
+
+# Destinations quarantined subscribers may reach (payment portal networks).
+whitelist:
+  networks:
+    - 203.0.113.0/24
+  # Domains are resolved by the portal's dnsmasq and their answers are added
+  # to the nftables whitelist sets automatically (dnsmasq nftset).
+  domains:
+    - pay.company.example
+
+dns:
+  upstreams:
+    - 1.1.1.1
+    - 8.8.8.8
+
+interfaces:
+  subscriber: eth1   # faces the BNG / quarantine VRF
+  wan: eth0          # egress for whitelisted (payment) traffic
