@@ -64,7 +64,7 @@ class PortalConfig(BaseModel):
     def _require_page_or_redirect(self) -> "PortalConfig":
         if not self.static_page.enable and self.redirect is None:
             raise ValueError(
-                "set static_page.enable: true or provide redirect.url — the portal "
+                "set static_page.enable: true or provide redirect.url, the portal "
                 "must either serve the local page or redirect somewhere"
             )
         return self

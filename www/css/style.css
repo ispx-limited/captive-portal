@@ -45,11 +45,6 @@ body {
   text-align: center;
 }
 
-.icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-}
-
 h1 {
   font-size: 1.4rem;
   margin: 0 0 0.75rem;
@@ -93,7 +88,6 @@ p {
   animation: pulse 2s ease-in-out infinite;
 }
 
-.card.restored .icon,
 .card.restored h1 {
   color: var(--ok);
 }
