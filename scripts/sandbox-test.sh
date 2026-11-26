@@ -68,5 +68,30 @@ check_blocked "ping non-whitelisted destination is dropped" sub ping -c1 -W2 198
 check "portal FQDN resolves to portal via dnsmasq" \
   sh -c "$COMPOSE exec -T subscriber dig +short @10.255.0.1 portal.company.example | grep -q 10.255.0.1"
 
+# IPv6: the same path, with the subscriber's default route pointing at the
+# gateway's fd00:255::1 and fd00:113::10 whitelisted.
+code=$(sub curl -s -o /dev/null -w '%{http_code}' -m 5 'http://[fd00:dead::99]/')
+check "IPv6 HTTP to arbitrary address intercepted with $expected_code (got $code)" \
+  test "$code" = "$expected_code"
+
+check_blocked "IPv6 HTTPS to arbitrary address is dropped" sub curl -s -m 3 'https://[fd00:dead::99]/'
+
+check "IPv6 whitelisted payment portal reachable directly" \
+  sub curl -s -o /dev/null -m 5 'http://[fd00:113::10]/'
+
+check "ping IPv6 whitelisted payment portal" sub ping -6 -c1 -W2 fd00:113::10
+
+check_blocked "ping IPv6 non-whitelisted destination is dropped" sub ping -6 -c1 -W2 fd00:dead::1
+
+check "portal FQDN has an AAAA record from dnsmasq over IPv6" \
+  sh -c "$COMPOSE exec -T subscriber dig +short @fd00:255::1 AAAA portal.company.example | grep -q fd00:255::1"
+
+# DNS over TLS is reset, not dropped: curl exits 7 (refused) rather than 28
+# (timed out), so strict private DNS clients fail over to plain DNS at once.
+check "DoT port 853 is refused with a reset" \
+  sh -c "$COMPOSE exec -T subscriber curl -s -m 3 http://192.0.2.99:853/; test \$? -eq 7"
+check "IPv6 DoT port 853 is refused with a reset" \
+  sh -c "$COMPOSE exec -T subscriber curl -s -m 3 'http://[fd00:dead::99]:853/'; test \$? -eq 7"
+
 echo "== $pass passed, $fail failed =="
 exit "$((fail > 0))"

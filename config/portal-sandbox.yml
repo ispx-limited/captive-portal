@@ -9,12 +9,14 @@ static_page:
 
 portal:
   listen_ip: 10.255.0.1
+  listen_ip6: fd00:255::1
   fqdn: portal.company.example
 
 whitelist:
   networks:
     - 203.0.113.10/32
     - 8.8.8.8/32
+    - fd00:113::10/128
   # Add a real domain here (e.g. one.one.one.one) to demo dynamic nftset
   # whitelisting when the sandbox host has internet access.
   domains: []

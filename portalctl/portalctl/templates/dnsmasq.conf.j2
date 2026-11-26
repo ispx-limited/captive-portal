@@ -2,6 +2,9 @@
 
 port=53
 listen-address={{ config.portal.listen_ip }}
+{% if config.portal.listen_ip6 %}
+listen-address={{ config.portal.listen_ip6 }}
+{% endif %}
 bind-interfaces
 no-resolv
 no-hosts
@@ -13,6 +16,9 @@ server={{ upstream }}
 
 # Portal FQDN resolves to the portal itself inside the walled garden.
 address=/{{ config.portal.fqdn }}/{{ config.portal.listen_ip }}
+{% if config.portal.listen_ip6 %}
+address=/{{ config.portal.fqdn }}/{{ config.portal.listen_ip6 }}
+{% endif %}
 
 {% for domain in config.whitelist.domains %}
 # Whitelisted domain: resolved addresses are pushed into the nftables sets.

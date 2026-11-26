@@ -28,7 +28,12 @@ table inet captive {
         type nat hook prerouting priority dstnat; policy accept;
         iifname "{{ config.interfaces.subscriber }}" ip daddr {{ config.portal.listen_ip }} return
         iifname "{{ config.interfaces.subscriber }}" ip daddr @whitelist_v4 return
-        iifname "{{ config.interfaces.subscriber }}" tcp dport 80 dnat ip to {{ config.portal.listen_ip }}:80
+        iifname "{{ config.interfaces.subscriber }}" meta nfproto ipv4 tcp dport 80 dnat ip to {{ config.portal.listen_ip }}:80
+{% if config.portal.listen_ip6 %}
+        iifname "{{ config.interfaces.subscriber }}" ip6 daddr {{ config.portal.listen_ip6 }} return
+        iifname "{{ config.interfaces.subscriber }}" ip6 daddr @whitelist_v6 return
+        iifname "{{ config.interfaces.subscriber }}" meta nfproto ipv6 tcp dport 80 dnat ip6 to [{{ config.portal.listen_ip6 }}]:80
+{% endif %}
     }
 
     # Walled garden: only whitelisted destinations may be forwarded.
