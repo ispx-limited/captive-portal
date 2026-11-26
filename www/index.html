@@ -8,7 +8,6 @@
 </head>
 <body>
   <div class="card" id="card">
-    <div class="icon" id="icon">&#9888;&#65039;</div>
     <h1 id="title">Your internet service is suspended</h1>
     <p id="message">Your account has an outstanding balance. Please pay your
        bill to restore your connection. Service resumes automatically once
@@ -16,7 +15,7 @@
     <!-- Point this at your payment portal; it must be in whitelist.networks
          or whitelist.domains in portal.yml or customers can't reach it. -->
     <a class="button" href="https://pay.company.example/portal">Pay my bill</a>
-    <div class="status"><span class="dot"></span><span id="status-text">Waiting for payment &mdash; checking automatically</span></div>
+    <div class="status"><span class="dot"></span><span id="status-text">Waiting for payment, checking automatically</span></div>
   </div>
   <script src="/js/app.js" defer></script>
 </body>

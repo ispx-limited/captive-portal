@@ -13,10 +13,9 @@
 
   function restored() {
     card.classList.add("restored");
-    document.getElementById("icon").textContent = "✅";
     document.getElementById("title").textContent = "Your service is restored";
     document.getElementById("message").textContent =
-      "Payment received - your connection is active again. " +
+      "Payment received, your connection is active again. " +
       "You may need to reconnect or restart your router.";
     statusText.textContent = "Back online";
   }
@@ -25,7 +24,7 @@
     fetch("/healthz?" + Date.now(), { cache: "no-store" })
       .then(function () {
         failures = 0;
-        statusText.textContent = "Waiting for payment — checking automatically";
+        statusText.textContent = "Waiting for payment, checking automatically";
         setTimeout(probe, INTERVAL_MS);
       })
       .catch(function () {
