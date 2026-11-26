@@ -70,7 +70,7 @@ The box filters forwarded traffic with the subscriber's real source address
 and needs only a route back towards the BNG. How the BNG steers a suspended
 subscriber here is your choice, and the three common ways behave differently:
 
-![Three options side by side. A, recommended: a CoA applies a filter or service profile, the session keeps its VRF and address, and all traffic except payment goes to the box. B: a CoA moves the session to a quarantine VRF, which most BNGs refuse mid-session. C: a Disconnect-Request, then re-authentication into the quarantine VRF, in seconds for PPPoE and after the DHCP lease renews for IPoE.](docs/images/steering-options.svg)
+![Three options side by side. A, recommended: a CoA applies a filter or service profile, the session keeps its VRF and address, and all traffic except payment goes to the box. B: a CoA moves the session to a quarantine VRF, which most BNGs refuse mid-session, and a new VRF often means a new address and a re-DHCP anyway. C: a Disconnect-Request, then re-authentication into the quarantine VRF, in seconds for PPPoE, and for IPoE after a re-DHCP, usually forced by bouncing the ONU UNI port.](docs/images/steering-options.svg)
 
 - **A policy or filter pushed by CoA.** The subscriber keeps their VRF and
   address. The CoA changes the subscriber's filter or service profile to one
@@ -79,12 +79,17 @@ subscriber here is your choice, and the three common ways behave differently:
   next HTTP request, and a second CoA restores them. This is the recommended
   approach, and the only one that is smooth for IPoE.
 - **A quarantine VRF whose default route is this box.** Clean, but almost no
-  BNG moves a live session between VRFs by CoA, so this becomes the next
-  option in practice.
+  BNG moves a live session between VRFs by CoA. When the quarantine VRF has
+  its own address pool the subscriber also needs a new address, which means
+  a re-DHCP anyway, unless the BNG is really doing a redirect or next hop
+  override underneath. In practice this becomes the next option.
 - **Disconnect and re-authenticate into a quarantine VRF.** Works for PPPoE,
   where the CPE redials in seconds and RADIUS can return the same address.
   For IPoE the CPE keeps its DHCP lease and the subscriber has no session,
-  and no pay page, until the lease renews.
+  and no pay page, until it sends a new DHCP request. Waiting for the lease
+  to renew is too slow, so on PON networks the usual move is to bounce the
+  ONU's UNI port from the OLT or the ACS: the CPE sees its WAN link drop and
+  re-DHCPs at once.
 
 ### How devices find the portal
 
