@@ -68,8 +68,8 @@
       <text x="628" y="421">this mid-session</text>
       <text x="1012" y="265">Disconnect-Request</text>
       <text x="1012" y="397">PPPoE: seconds</text>
-      <text x="1012" y="413">IPoE: needs a re-DHCP,</text>
-      <text x="1012" y="429">often an ONU UNI bounce</text>
+      <text x="1012" y="413">IPoE: re-DHCP, often</text>
+      <text x="1012" y="429">via ONU UNI bounce</text>
 
       <text x="80" y="517">Pay page on the subscriber's next HTTP request.</text>
       <text x="80" y="533">A second CoA restores them.</text>
