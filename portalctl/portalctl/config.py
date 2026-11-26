@@ -1,4 +1,4 @@
-from ipaddress import IPv4Address, IPv4Network, IPv6Network, ip_network
+from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network, ip_network
 from pathlib import Path
 
 import yaml
@@ -20,6 +20,11 @@ class Tls(BaseModel):
 
 class Portal(BaseModel):
     listen_ip: IPv4Address
+    # The box's IPv6 address on the subscriber side. Without it IPv6 from
+    # subscribers is still filtered (whitelist forwarded, the rest dropped)
+    # but IPv6 HTTP is dropped instead of intercepted, so IPv6-only clients
+    # never see the portal.
+    listen_ip6: IPv6Address | None = None
     fqdn: str
     tls: Tls | None = None
 

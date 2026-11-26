@@ -15,6 +15,10 @@ redirect:
 portal:
   # IP of this box inside the quarantine VRF (the BNG's default route target).
   listen_ip: 10.255.0.1
+  # Optional: the box's IPv6 address on the subscriber side. With it, IPv6
+  # HTTP from subscribers is intercepted too and the portal name gets an
+  # AAAA record. Without it IPv6 is filtered but never shown the portal.
+  listen_ip6: 2001:db8:255::1
   fqdn: portal.company.example
   # Optional: serve the portal page itself over HTTPS with a real certificate
   # for portal.fqdn (pfSense-style). Subscriber HTTPS to other destinations is

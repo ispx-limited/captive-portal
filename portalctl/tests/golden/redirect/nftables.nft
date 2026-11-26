@@ -24,7 +24,10 @@ table inet captive {
         type nat hook prerouting priority dstnat; policy accept;
         iifname "eth1" ip daddr 10.255.0.1 return
         iifname "eth1" ip daddr @whitelist_v4 return
-        iifname "eth1" tcp dport 80 dnat ip to 10.255.0.1:80
+        iifname "eth1" meta nfproto ipv4 tcp dport 80 dnat ip to 10.255.0.1:80
+        iifname "eth1" ip6 daddr 2001:db8:255::1 return
+        iifname "eth1" ip6 daddr @whitelist_v6 return
+        iifname "eth1" meta nfproto ipv6 tcp dport 80 dnat ip6 to [2001:db8:255::1]:80
     }
 
     # Walled garden: only whitelisted destinations may be forwarded.

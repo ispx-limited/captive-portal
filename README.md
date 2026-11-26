@@ -22,7 +22,8 @@ configuration from one YAML file and reloads them when it changes.
 ## What it does
 
 - Intercepts HTTP from subscribers and serves your own page from `www/`, or
-  redirects every request to a URL you choose.
+  redirects every request to a URL you choose. IPv4 and, with
+  `portal.listen_ip6` set, IPv6.
 - Lets subscribers reach the payment provider: networks you list, and domains
   that dnsmasq resolves live and feeds into the nftables whitelist sets.
 - Drops everything else, including all HTTPS to other destinations. DNS over
@@ -131,6 +132,7 @@ redirect:                 # optional, overrides static_page when present
   url: https://pay.example/portal
 portal:
   listen_ip: 10.255.0.1   # this box, as the BNG routes to it
+  listen_ip6: 2001:db8:255::1   # optional, enables the portal for IPv6
   fqdn: portal.example
   # tls: {cert: /etc/portal/tls/fullchain.pem, key: /etc/portal/tls/privkey.pem}
 whitelist:
@@ -143,7 +145,10 @@ interfaces:
   wan: eth0               # egress for whitelisted traffic
 ```
 
-Either `static_page.enable` or `redirect.url` is required. Links in your
+Either `static_page.enable` or `redirect.url` is required. Without
+`listen_ip6`, IPv6 from subscribers is still filtered, whitelisted
+destinations forwarded and the rest dropped, but IPv6 HTTP is dropped rather
+than intercepted, so an IPv6-only client never sees the portal. Links in your
 `www/` HTML must point at whitelisted destinations or subscribers cannot
 follow them. The page shipped in `www/` polls the box and tells the subscriber
 when their service is back, because after the restoring CoA the box stops
@@ -158,13 +163,14 @@ sudo cp host/modprobe.d/*     /etc/modprobe.d/
 sudo modprobe nf_conntrack && sudo sysctl --system
 ```
 
-These enable forwarding, size conntrack for a million flows with short
-timeouts, and give nginx accept queue headroom for probe bursts.
+These enable IPv4 and IPv6 forwarding, size conntrack for a million flows
+with short timeouts, and give nginx accept queue headroom for probe bursts.
 
 The rules filter forwarded traffic only. The input policy is yours: on the
 subscriber interface allow tcp/80 (and 443 with `portal.tls`), udp and tcp 53
-to `listen_ip`, and ICMP, and block the rest, SSH included. Manage the box
-over a separate interface.
+to `listen_ip` and `listen_ip6`, ICMP, and the ICMPv6 neighbour discovery
+types, and block the rest, SSH included. Manage the box over a separate
+interface.
 
 ## Sandbox
 
@@ -180,7 +186,8 @@ docker compose -f docker-compose-sandbox.yml down -v
 ```
 
 The test script checks interception, the detection probe, the HTTPS drop,
-the whitelist, and DNS from the subscriber's side. CI runs it on every
+the whitelist, and DNS from the subscriber's side, over IPv4 and IPv6. CI
+runs it on every
 change, together with the `portalctl` tests in `portalctl/tests`. See
 [CONTRIBUTING](CONTRIBUTING.md) for the development loop.
 
@@ -198,9 +205,8 @@ change, together with the `portalctl` tests in `portalctl/tests`. See
 
 ## Current limitations
 
-- The subscriber side is IPv4. IPv6 whitelist sets are rendered and
-  whitelisted IPv6 destinations are forwarded, but IPv6 HTTP from subscribers
-  is dropped rather than intercepted, and `listen_ip` is IPv4 only.
+- The box sends no router advertisements and runs no DHCPv6. Subscribers get
+  their IPv6 addressing from the BNG as usual, and the BNG routes it here.
 - One tenant per box: one page or redirect, one whitelist, one portal name.
 - A device that was online when the suspension happened may not show the
   sign-in sheet until it reconnects or wakes, as described above.

@@ -3,10 +3,10 @@
 # payment portal (paysite) sits on the WAN side and a subscriber container is
 # routed through the gateway, exactly like a quarantined BNG session.
 #
-#   subscriber (10.255.0.50) --default route--> gateway (10.255.0.1)
-#       [subscribers network, internal]              |  nftables/nginx/dnsmasq
-#                                                    v  in this netns
-#                                paysite (203.0.113.10) [wan network]
+#   subscriber (10.255.0.50, fd00:255::50) --default route--> gateway (10.255.0.1, fd00:255::1)
+#       [subscribers network]                                     |  nftables/nginx/dnsmasq
+#                                                                 v  in this netns
+#                                paysite (203.0.113.10, fd00:113::10) [wan network]
 #
 # Usage:
 #   docker compose -f docker-compose-sandbox.yml up -d --build
@@ -41,17 +41,25 @@ services:
         rename 203.0.113. wan
         rename 10.255.0. sub
         ip route replace default via 203.0.113.254 dev wan
-        ip -o -f inet addr show; ip route
+        ip -6 route replace default via fd00:113::fffe dev wan
+        ip -o -f inet addr show; ip -o -f inet6 addr show; ip route; ip -6 route
         exec tail -f /dev/null
     cap_add:
       - NET_ADMIN
     sysctls:
       net.ipv4.ip_forward: "1"
+      net.ipv6.conf.all.forwarding: "1"
+      # The rename above takes each link down, which would flush its IPv6
+      # addresses.
+      net.ipv6.conf.all.keep_addr_on_down: "1"
+      net.ipv6.conf.default.keep_addr_on_down: "1"
     networks:
       wan:
         ipv4_address: 203.0.113.2
+        ipv6_address: fd00:113::2
       subscribers:
         ipv4_address: 10.255.0.1
+        ipv6_address: fd00:255::1
     restart: unless-stopped
 
   portalctl:
@@ -111,6 +119,7 @@ services:
     networks:
       wan:
         ipv4_address: 203.0.113.10
+        ipv6_address: fd00:113::10
     restart: unless-stopped
 
   # Simulated quarantined subscriber. Exec into it to test:
@@ -125,17 +134,21 @@ services:
     networks:
       subscribers:
         ipv4_address: 10.255.0.50
-    command: ["sh", "-c", "ip route replace default via 10.255.0.1 && exec sleep infinity"]
+        ipv6_address: fd00:255::50
+    command: ["sh", "-c", "ip route replace default via 10.255.0.1 && ip -6 route replace default via fd00:255::1 && exec sleep infinity"]
     depends_on:
       - gateway
     restart: unless-stopped
 
 networks:
   wan:
+    enable_ipv6: true
     ipam:
       config:
         - subnet: 203.0.113.0/24
           gateway: 203.0.113.254
+        - subnet: fd00:113::/64
+          gateway: fd00:113::fffe
   subscribers:
     # Not "internal": Docker guards an internal bridge with a host rule that
     # drops frames entering it for any address outside its subnet, and with
@@ -143,10 +156,13 @@ networks:
     # too. The subscriber's packets for the outside world would be dropped
     # on the way to the gateway container. The subscriber's only route out
     # is still the gateway: its default route is replaced on start.
+    enable_ipv6: true
     ipam:
       config:
         - subnet: 10.255.0.0/24
           gateway: 10.255.0.254
+        - subnet: fd00:255::/64
+          gateway: fd00:255::fffe
 
 volumes:
   portal-run:

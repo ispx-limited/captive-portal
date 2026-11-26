@@ -5,7 +5,11 @@ from portalctl.config import PortalConfig
 BASE = {
     "static_page": {"enable": False},
     "redirect": {"url": "https://pay.company.example/portal"},
-    "portal": {"listen_ip": "10.255.0.1", "fqdn": "portal.company.example"},
+    "portal": {
+        "listen_ip": "10.255.0.1",
+        "listen_ip6": "2001:db8:255::1",
+        "fqdn": "portal.company.example",
+    },
     "whitelist": {
         "networks": ["203.0.113.0/24", "2001:db8:beef::/48"],
         "domains": ["pay.company.example"],

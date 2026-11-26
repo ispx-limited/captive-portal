@@ -45,6 +45,12 @@ def test_invalid_listen_ip_rejected(base_data):
         PortalConfig.model_validate(base_data)
 
 
+def test_invalid_listen_ip6_rejected(base_data):
+    base_data["portal"]["listen_ip6"] = "10.255.0.1"
+    with pytest.raises(ValidationError):
+        PortalConfig.model_validate(base_data)
+
+
 def test_defaults(base_data):
     del base_data["dns"]
     config = PortalConfig.model_validate(base_data)

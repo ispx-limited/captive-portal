@@ -41,6 +41,9 @@ http {
 
     server {
         listen 80 default_server reuseport backlog=4096;
+{% if config.portal.listen_ip6 %}
+        listen [::]:80 default_server reuseport backlog=4096;
+{% endif %}
         server_name _;
 
         if ($request_method !~ ^(GET|HEAD)$) {
@@ -81,6 +84,9 @@ http {
 
     server {
         listen 443 ssl reuseport backlog=1024;
+{% if config.portal.listen_ip6 %}
+        listen [::]:443 ssl reuseport backlog=1024;
+{% endif %}
         server_name {{ config.portal.fqdn }};
 
         ssl_certificate {{ config.portal.tls.cert }};
