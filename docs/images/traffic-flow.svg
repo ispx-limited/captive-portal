@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-label="A suspended subscriber's traffic goes from the BNG to the portal box, where nftables sends HTTP on port 80 to nginx for the pay page, forwards whitelisted destinations to the payment portal and drops everything else. When the bill is paid the RADIUS platform sends a CoA that restores the session.">
+  <defs>
+    <marker id="head-grey" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B7280"/></marker>
+    <marker id="head-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#E53935"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1120" height="600" fill="#FFFFFF"/>
+  <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="64" y="88" font-size="24" font-weight="700" fill="#111111">How a suspended subscriber's traffic moves</text>
+
+    <rect x="528" y="160" width="272" height="368" rx="12" fill="#FFFFFF" stroke="#E53935" stroke-width="2"/>
+    <text x="544" y="183" font-size="13" font-weight="600" fill="#E53935">portal box</text>
+
+    <g fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="224" y1="348" x2="303" y2="348" marker-end="url(#head-grey)"/>
+      <line x1="464" y1="348" x2="591" y2="348" marker-end="url(#head-grey)"/>
+      <line x1="664" y1="264" x2="664" y2="311" marker-end="url(#head-grey)"/>
+      <line x1="736" y1="336" x2="879" y2="336" marker-end="url(#head-grey)"/>
+      <polyline points="736,360 808,360 808,468 879,468" stroke-dasharray="6 6" marker-end="url(#head-grey)"/>
+      <line x1="968" y1="312" x2="968" y2="265" marker-end="url(#head-grey)"/>
+      <polyline points="968,192 968,136 384,136 384,311" marker-end="url(#head-grey)"/>
+    </g>
+    <line x1="664" y1="384" x2="664" y2="431" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" marker-end="url(#head-red)"/>
+
+    <g fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1">
+      <rect x="64" y="312" width="160" height="72" rx="8"/>
+      <rect x="304" y="312" width="160" height="72" rx="8"/>
+      <rect x="592" y="192" width="144" height="72" rx="8"/>
+      <rect x="592" y="312" width="144" height="72" rx="8"/>
+      <rect x="880" y="192" width="176" height="72" rx="8"/>
+      <rect x="880" y="312" width="176" height="72" rx="8"/>
+    </g>
+    <rect x="592" y="432" width="144" height="72" rx="8" fill="#FFFFFF" stroke="#E53935" stroke-width="2"/>
+    <rect x="880" y="432" width="176" height="72" rx="8" fill="#FFFFFF" stroke="#6B7280" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <g font-size="15" text-anchor="middle" fill="#111111">
+      <text x="144" y="344" font-weight="700">Subscriber</text>
+      <text x="144" y="364" font-size="13" fill="#6B7280">suspended session</text>
+      <text x="384" y="353" font-weight="700">BNG</text>
+      <text x="664" y="224" font-weight="700">dnsmasq</text>
+      <text x="664" y="244" font-size="13" fill="#6B7280">port 53</text>
+      <text x="664" y="353" font-weight="700">nftables</text>
+      <text x="664" y="464" font-weight="700">nginx</text>
+      <text x="664" y="484" font-size="13" fill="#6B7280">pay page</text>
+      <text x="968" y="224" font-weight="700">RADIUS platform</text>
+      <text x="968" y="244" font-size="13" fill="#6B7280">AuthMesh or another</text>
+      <text x="968" y="344" font-weight="700">Payment portal</text>
+      <text x="968" y="364" font-size="13" fill="#6B7280">your provider</text>
+      <text x="968" y="464" font-weight="700" fill="#6B7280">Dropped</text>
+      <text x="968" y="484" font-size="13" fill="#6B7280">including all HTTPS</text>
+    </g>
+
+    <g font-size="13" fill="#6B7280">
+      <text x="264" y="333" text-anchor="middle">traffic</text>
+      <text x="528" y="333" text-anchor="middle">all traffic</text>
+      <text x="676" y="293">resolved IPs</text>
+      <text x="676" y="413" fill="#E53935">tcp/80 DNAT</text>
+      <text x="808" y="321" text-anchor="middle">whitelisted, SNAT</text>
+      <text x="820" y="419">everything else</text>
+      <text x="980" y="293">bill paid</text>
+      <text x="676" y="121" text-anchor="middle">CoA steers, then restores</text>
+    </g>
+  </g>
+</svg>

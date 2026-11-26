@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1232 624" width="1232" height="624" role="img" aria-label="Three ways the BNG steers a suspended subscriber to the portal box. A, recommended: a CoA applies a filter or service profile and the session keeps its VRF and address. B: a CoA moves the session to a quarantine VRF, which most BNGs refuse mid-session. C: a Disconnect-Request, then re-authentication into the quarantine VRF, in seconds for PPPoE and after the DHCP lease renews for IPoE.">
+  <defs>
+    <marker id="head-grey" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B7280"/></marker>
+    <marker id="head-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#E53935"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1232" height="624" fill="#FFFFFF"/>
+  <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="64" y="88" font-size="24" font-weight="700" fill="#111111">Three ways the BNG steers a suspended subscriber to the box</text>
+
+    <rect x="64" y="112" width="336" height="448" rx="12" fill="#FFFFFF" stroke="#E53935" stroke-width="2"/>
+    <rect x="448" y="112" width="336" height="448" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <rect x="832" y="112" width="336" height="448" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+
+    <g font-size="15" font-weight="600">
+      <text x="80" y="143" fill="#E53935">A. Filter by CoA, recommended</text>
+      <text x="464" y="143" fill="#111111">B. Move the session to a quarantine VRF</text>
+      <text x="848" y="143" fill="#111111">C. Disconnect and re-authenticate</text>
+    </g>
+
+    <g fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round">
+      <line x1="232" y1="232" x2="232" y2="287" marker-end="url(#head-grey)"/>
+      <line x1="616" y1="232" x2="616" y2="287" marker-end="url(#head-grey)"/>
+      <line x1="616" y1="376" x2="616" y2="439" stroke-dasharray="6 6" marker-end="url(#head-grey)"/>
+      <line x1="1000" y1="232" x2="1000" y2="287" marker-end="url(#head-grey)"/>
+      <line x1="1000" y1="376" x2="1000" y2="439" marker-end="url(#head-grey)"/>
+    </g>
+    <line x1="232" y1="376" x2="232" y2="439" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" marker-end="url(#head-red)"/>
+
+    <g fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1">
+      <rect x="132" y="176" width="200" height="56" rx="8"/>
+      <rect x="132" y="288" width="200" height="88" rx="8"/>
+      <rect x="516" y="176" width="200" height="56" rx="8"/>
+      <rect x="516" y="288" width="200" height="88" rx="8"/>
+      <rect x="900" y="176" width="200" height="56" rx="8"/>
+      <rect x="900" y="288" width="200" height="88" rx="8"/>
+      <rect x="900" y="440" width="200" height="56" rx="8"/>
+    </g>
+    <rect x="132" y="440" width="200" height="56" rx="8" fill="#FFFFFF" stroke="#E53935" stroke-width="2"/>
+    <rect x="516" y="440" width="200" height="56" rx="8" fill="#FFFFFF" stroke="#6B7280" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <g font-size="15" text-anchor="middle" fill="#111111">
+      <text x="232" y="209" font-weight="700">RADIUS platform</text>
+      <text x="616" y="209" font-weight="700">RADIUS platform</text>
+      <text x="1000" y="209" font-weight="700">RADIUS platform</text>
+
+      <text x="232" y="317" font-weight="700">BNG</text>
+      <text x="232" y="337" font-size="13" fill="#6B7280">session keeps its VRF</text>
+      <text x="232" y="355" font-size="13" fill="#6B7280">and address</text>
+      <text x="616" y="317" font-weight="700">BNG</text>
+      <text x="616" y="337" font-size="13" fill="#6B7280">a live session must</text>
+      <text x="616" y="355" font-size="13" fill="#6B7280">change VRF</text>
+      <text x="1000" y="317" font-weight="700">BNG</text>
+      <text x="1000" y="337" font-size="13" fill="#6B7280">session torn down, re-auth</text>
+      <text x="1000" y="355" font-size="13" fill="#6B7280">into the quarantine VRF</text>
+
+      <text x="232" y="473" font-weight="700">portal box</text>
+      <text x="616" y="473" font-weight="700" fill="#6B7280">portal box</text>
+      <text x="1000" y="473" font-weight="700">portal box</text>
+    </g>
+
+    <g font-size="13" fill="#6B7280">
+      <text x="244" y="257">CoA: filter or</text>
+      <text x="244" y="273">service profile</text>
+      <text x="244" y="405" fill="#E53935">all traffic to box</text>
+      <text x="244" y="421" fill="#E53935">except payment</text>
+      <text x="628" y="265">CoA: new VRF</text>
+      <text x="628" y="405">most BNGs refuse</text>
+      <text x="628" y="421">this mid-session</text>
+      <text x="1012" y="265">Disconnect-Request</text>
+      <text x="1012" y="405">PPPoE: seconds</text>
+      <text x="1012" y="421">IPoE: DHCP renew</text>
+
+      <text x="80" y="517">Pay page on the subscriber's next HTTP request.</text>
+      <text x="80" y="533">A second CoA restores them.</text>
+      <text x="464" y="517">Clean on paper.</text>
+      <text x="464" y="533">In practice this becomes option C.</text>
+      <text x="848" y="517">Smooth for PPPoE when RADIUS returns the</text>
+      <text x="848" y="533">same address. IPoE has no session, and no</text>
+      <text x="848" y="549">pay page, until the lease renews.</text>
+    </g>
+  </g>
+</svg>

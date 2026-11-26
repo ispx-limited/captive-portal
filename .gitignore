@@ -4,4 +4,4 @@ __pycache__/
 config/portal.yml
 .claude/
 .context/
-context
+context.worktrees/

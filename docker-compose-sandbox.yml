@@ -23,18 +23,35 @@ services:
   gateway:
     logging: *logging
     image: alpine:3.20
-    command: ["tail", "-f", "/dev/null"]
+    # Docker does not promise which network becomes eth0, and once both
+    # networks carry a gateway it also picks the default route itself, so
+    # the interfaces are named by address here and the default route is set
+    # explicitly. config/portal-sandbox.yml refers to them as wan and sub.
+    command:
+      - sh
+      - -ec
+      - |
+        rename() {
+          dev=$$(ip -o -f inet addr show | awk -v p="$$1" '$$4 ~ "^"p {print $$2; exit}')
+          [ -n "$$dev" ] || { echo "no interface in $$1" >&2; exit 1; }
+          ip link set "$$dev" down
+          ip link set "$$dev" name "$$2"
+          ip link set "$$2" up
+        }
+        rename 203.0.113. wan
+        rename 10.255.0. sub
+        ip route replace default via 203.0.113.254 dev wan
+        ip -o -f inet addr show; ip route
+        exec tail -f /dev/null
+    cap_add:
+      - NET_ADMIN
     sysctls:
       net.ipv4.ip_forward: "1"
     networks:
-      # priority pins interface order: wan -> eth0, subscribers -> eth1
-      # (matches interfaces.wan/subscriber in config/portal-sandbox.yml).
       wan:
         ipv4_address: 203.0.113.2
-        priority: 100
       subscribers:
         ipv4_address: 10.255.0.1
-        priority: 50
     restart: unless-stopped
 
   portalctl:
@@ -120,8 +137,12 @@ networks:
         - subnet: 203.0.113.0/24
           gateway: 203.0.113.254
   subscribers:
-    # internal: the only way out is through the gateway container.
-    internal: true
+    # Not "internal": Docker guards an internal bridge with a host rule that
+    # drops frames entering it for any address outside its subnet, and with
+    # br_netfilter loaded (Docker loads it) that rule sees bridged frames
+    # too. The subscriber's packets for the outside world would be dropped
+    # on the way to the gateway container. The subscriber's only route out
+    # is still the gateway: its default route is replaced on start.
     ipam:
       config:
         - subnet: 10.255.0.0/24

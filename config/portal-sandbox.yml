@@ -23,8 +23,9 @@ dns:
   upstreams:
     - 1.1.1.1
 
-# In the sandbox gateway container: eth0 = wan network, eth1 = subscribers
-# network (ordering pinned via network priority in docker-compose-sandbox.yml).
+# The sandbox gateway container renames its interfaces by address on start
+# (see docker-compose-sandbox.yml): wan faces the paysite, sub faces the
+# subscriber.
 interfaces:
-  subscriber: eth1
-  wan: eth0
+  subscriber: sub
+  wan: wan
